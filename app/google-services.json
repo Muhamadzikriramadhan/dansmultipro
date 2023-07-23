@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "26014886165",
+    "project_id": "dans-multi-pro-193b4",
+    "storage_bucket": "dans-multi-pro-193b4.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:26014886165:android:75fb53cdcbb15f5366e11c",
+        "android_client_info": {
+          "package_name": "com.example.dansmultipro"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "26014886165-6shbeta1hqov2a8j70hloj0npvvgsddl.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAU3Xp2H_GbcA12eESGY47ERmKQnxpPwwY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "26014886165-6shbeta1hqov2a8j70hloj0npvvgsddl.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
