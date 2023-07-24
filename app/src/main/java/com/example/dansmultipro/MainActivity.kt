@@ -21,7 +21,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
         sharedPreferences = com.example.dansmultipro.sharedpreferences.SharedPreferences(this)
 
-//        checkLogin()
+        checkLogin()
 
         binding.bnv.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener)
         val fragment = HomeFragment.newInstance()

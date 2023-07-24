@@ -28,6 +28,14 @@ class SharedPreferences(var context: Context) {
         editor?.commit()
     }
 
+    fun getName(): String? {
+        return pref?.getString("fullname", "")
+    }
+
+    fun getEmail(): String? {
+        return pref?.getString("email", "")
+    }
+
     fun removeData() {
         editor?.clear()
         editor?.commit()

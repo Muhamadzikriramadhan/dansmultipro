@@ -20,7 +20,6 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         app:menu="@menu/item_menu"
-        android:visibility="gone"
         android:theme="@style/BottomNavTheme"
         app:itemTextAppearanceInactive="@style/bnvinactive"
         app:itemTextAppearanceActive="@style/bnvactive"

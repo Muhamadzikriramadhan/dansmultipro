@@ -1,27 +1,32 @@
 package com.example.dansmultipro.auth
 
+import android.app.Activity
 import android.content.Intent
+import android.content.IntentSender
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
-import bolts.Task
+import androidx.activity.result.ActivityResultCallback
+import androidx.activity.result.IntentSenderRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import com.example.dansmultipro.MainActivity
+import com.example.dansmultipro.R
 import com.example.dansmultipro.databinding.ActivityLoginBinding
 import com.example.dansmultipro.model.User
 import com.example.dansmultipro.sharedpreferences.SharedPreferences
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount
-import com.google.android.gms.auth.api.signin.GoogleSignInClient
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.auth.api.identity.BeginSignInRequest
+import com.google.android.gms.auth.api.identity.BeginSignInRequest.GoogleIdTokenRequestOptions
+import com.google.android.gms.auth.api.identity.Identity
+import com.google.android.gms.auth.api.identity.SignInClient
 import com.google.android.gms.common.api.ApiException
 
 class LoginActivity : AppCompatActivity() {
 
     lateinit var binding: ActivityLoginBinding
     lateinit var sharedPreferences: SharedPreferences
-    lateinit var gso: GoogleSignInOptions
-    lateinit var gsc: GoogleSignInClient
-
+    lateinit var signingClient: SignInClient
+    lateinit var beginsignInRequest: BeginSignInRequest
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,39 +38,50 @@ class LoginActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).requestEmail().build()
-        gsc = GoogleSignIn.getClient(this, gso)
-
+        signingClient =  Identity.getSignInClient(this)
+        beginsignInRequest = BeginSignInRequest.builder()
+            .setGoogleIdTokenRequestOptions(GoogleIdTokenRequestOptions.builder()
+                .setSupported(true)
+                .setServerClientId(getString(R.string.client_web_id))
+                .setFilterByAuthorizedAccounts(false)
+                .build())
+            .build()
+        var intentsend = registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult(), ActivityResultCallback {
+            if (it.resultCode == Activity.RESULT_OK) {
+                try {
+                    val credential = signingClient.getSignInCredentialFromIntent(it.data)
+                    val idToken = credential.googleIdToken
+                    val username = credential.id
+                    if (idToken != null) {
+                        var email = credential.id
+                        var user = User(credential.displayName.toString(), username)
+                        sharedPreferences.setPref(user)
+                        var intent = Intent(this@LoginActivity, MainActivity::class.java)
+                        sharedPreferences.setLogin(true)
+                        startActivity(intent)
+                        Toast.makeText(this@LoginActivity, "Welcome $user", Toast.LENGTH_SHORT).show()
+                        finish()
+                    }
+                } catch (e: ApiException) {
+                    e.printStackTrace()
+                }
+            }
+        })
         binding.google.setOnClickListener {
-            signin()
+            signingClient.beginSignIn(beginsignInRequest)
+                .addOnSuccessListener {
+                    try {
+                        var intentSender = IntentSenderRequest.Builder(it.pendingIntent.intentSender).build()
+                        intentsend.launch(intentSender)
+//                        startIntentSenderForResult(it.pendingIntent.intentSender, 2,null, 0, 0, 0, null)
+                    } catch (e: IntentSender.SendIntentException) {
+                        Log.d("TAG", "onCreate: $e")
+                    }
+                }
+                .addOnFailureListener {
+                    Log.d("TAG", "onCreate: ${it.localizedMessage}")
+                }
         }
     }
 
-    private fun signin() {
-        var intent = gsc.signInIntent
-        startActivityForResult(intent,1000)
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == 1000) {
-            var task : com.google.android.gms.tasks.Task<GoogleSignInAccount> = GoogleSignIn.getSignedInAccountFromIntent(data)
-            var acct = GoogleSignIn.getLastSignedInAccount(this@LoginActivity)
-            if (acct != null) {
-                var user = User(acct.displayName.toString(), acct.email.toString())
-                sharedPreferences.setPref(user)
-                finish()
-                var intent = Intent(this@LoginActivity, MainActivity::class.java)
-                sharedPreferences.setLogin(true)
-                startActivity(intent)
-            } else {
-                Toast.makeText(this, "Login Failed", Toast.LENGTH_SHORT).show()
-            }
-            try {
-                task.getResult(ApiException::class.java)
-            } catch (e: ApiException) {
-                e.printStackTrace()
-            }
-        }
-    }
 }
